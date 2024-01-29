@@ -6,6 +6,7 @@
 #include "AttributeComponent.h"
 #include "InteractComponent.h"
 #include "GameFramework/Character.h"
+#include "GAS/LActionComponent.h"
 #include "LCharacter.generated.h"
 
 class UCameraComponent;
@@ -18,27 +19,10 @@ class FCPPPROJECT_API ALCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ALCharacter();
-	
-	
 
 protected:
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ProjectileClass;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> BlackHoleProjectile;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> DashProjectile;
-
-	UPROPERTY(EditDefaultsOnly,Category="Effect")
-	UParticleSystem * ImpactVFx;
-
-protected:
-
-	UPROPERTY(EditAnywhere,Category="Socket")
-	FName ShootSocket;
+	
 	
 	
 	UPROPERTY(VisibleAnywhere)
@@ -49,19 +33,13 @@ protected:
     UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
 	
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Comp")
 	UAttributeComponent * AttributeComp;
 
-	UPROPERTY(EditAnywhere,Category = "Attack")
-	UAnimMontage * AttackAnim;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Comp")
+	ULActionComponent * ActionComponent;
 
-	FTimerHandle TimerHandle_PrimaryAttack;
 	
-	FTimerHandle TimerHandle_BlackHoleAttack;
-
-	FTimerHandle TimerHandle_TeleportSkill;
-
-
 	
 	
 	// Called when the game starts or when spawned
@@ -79,15 +57,12 @@ protected:
 
 	void Jump();
 
+	void SprintStart();
+
+	void SprintStop();
+
 	void PrimaryInteract();
-
-	void TimerHandle_PrimaryAttackEvent();
 	
-	void TimerHandle_BlackHoleAttackEvent();
-
-	void Timehandle_TeleportSkillEvent();
-
-	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
 	UFUNCTION()
 	void OnheathChange(AActor * instigatorActor, UAttributeComponent* owningComp,float newheath,float delta);

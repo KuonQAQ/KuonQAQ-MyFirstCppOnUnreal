@@ -24,13 +24,15 @@ ALCharacter::ALCharacter()
 
 	InteractComponent = CreateDefaultSubobject<UInteractComponent>("Interact Comp");
 
-	AttributeComp=CreateDefaultSubobject<UAttributeComponent>("AttributeComp"); 
+	AttributeComp=CreateDefaultSubobject<UAttributeComponent>("AttributeComp");
+
+	ActionComponent=CreateDefaultSubobject<ULActionComponent>("ActionComp");
 
 	bUseControllerRotationYaw = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
-	ShootSocket = "Muzzle_01";
+	
 
 }
 
@@ -66,6 +68,16 @@ void ALCharacter::Jump()
 	Super::Jump();
 }
 
+void ALCharacter::SprintStart()
+{
+	ActionComponent->StartActionByName(this,"Sprint");
+}
+
+void ALCharacter::SprintStop()
+{
+	ActionComponent->StopActionByName(this,"Sprint");
+}
+
 void ALCharacter::PrimaryInteract()
 {
 	InteractComponent->PrimaryInteract();
@@ -95,67 +107,12 @@ void ALCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Teleport",EInputEvent::IE_Pressed,this,&ALCharacter::TeleportSkill);
 	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,this,&ALCharacter::Jump);
 	PlayerInputComponent->BindAction("Interact",IE_Pressed,this,&ALCharacter::PrimaryInteract);
-}
-
-void ALCharacter::TimerHandle_PrimaryAttackEvent()
-{
-	SpawnProjectile(ProjectileClass);
+	PlayerInputComponent->BindAction("Sprint",IE_Pressed,this,&ALCharacter::SprintStart);
+	PlayerInputComponent->BindAction("Sprint",IE_Released,this,&ALCharacter::SprintStop);
 }
 
 
 
-
-void ALCharacter::PrimartAttack()
-{
-	PlayAnimMontage(AttackAnim);
-
-	UGameplayStatics::SpawnEmitterAttached(ImpactVFx,GetMesh(),ShootSocket,FVector::ZeroVector,FRotator::ZeroRotator,EAttachLocation::SnapToTarget);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack,this,&ALCharacter::TimerHandle_PrimaryAttackEvent,0.2f);
-	
-	
-}
-
-
-
-void ALCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
-{
-	if(ensureAlways(ClassToSpawn))
-	{
-		FVector Handlocation = GetMesh()->GetSocketLocation(ShootSocket);
-
-		FVector TraceStart = CameraComp->GetComponentLocation();
-		FVector TraceEnd = TraceStart+(GetControlRotation().Vector()*5000);
-
-		FCollisionShape Shape;
-		Shape.SetSphere(20.0f);
-
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		FCollisionObjectQueryParams objparams;
-		objparams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		objparams.AddObjectTypesToQuery(ECC_WorldStatic);
-		objparams.AddObjectTypesToQuery(ECC_Pawn);
-
-		FHitResult HitResult;
-
-		if(GetWorld()->SweepSingleByObjectType(HitResult,TraceStart,TraceEnd,FQuat::Identity,objparams,Shape,Params))
-		{
-			TraceEnd=HitResult.ImpactPoint;
-		}
-
-		FRotator ProjectileRotator = FRotationMatrix::MakeFromX(TraceEnd-Handlocation).Rotator();
-		
-		FTransform SpawnTrans = FTransform(ProjectileRotator,Handlocation);
-
-		FActorSpawnParameters SpawnParam;
-		SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParam.Instigator= this;
-	
-		GetWorld()->SpawnActor<AActor>(ClassToSpawn,SpawnTrans,SpawnParam);
-	}
-}
 
 void ALCharacter::OnheathChange(AActor* instigatorActor, UAttributeComponent* owningComp, float newheath, float delta)
 {
@@ -189,28 +146,20 @@ FVector ALCharacter::GetPawnViewLocation() const
 	return CameraComp->GetComponentLocation();
 }
 
+
+void ALCharacter::PrimartAttack()
+{
+	ActionComponent->StartActionByName(this,"PrimaryAttack");
+}
+
+
 void ALCharacter::BlackHoleAttack()
 {
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_BlackHoleAttack,this,&ALCharacter::TimerHandle_BlackHoleAttackEvent,0.2f);
+	ActionComponent->StartActionByName(this,"TelePort");
 }
 
-
-
-void ALCharacter::TimerHandle_BlackHoleAttackEvent()
-{
-	SpawnProjectile(BlackHoleProjectile);
-}
-
-void ALCharacter::Timehandle_TeleportSkillEvent()
-{
-	SpawnProjectile(DashProjectile);
-}
 
 void ALCharacter::TeleportSkill()
 {
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_TeleportSkill,this,&ALCharacter::Timehandle_TeleportSkillEvent,0.2f);
+	ActionComponent->StartActionByName(this,"BlackHole");
 }
