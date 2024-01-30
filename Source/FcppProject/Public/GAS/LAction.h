@@ -3,13 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "GameplayTagContainer.h"
+#include "LActionComponent.h"
 #include "LAction.generated.h"
 
 
-/**
- * 
- */
 UCLASS(Blueprintable)
 class FCPPPROJECT_API ULAction : public UObject
 {
@@ -22,8 +20,27 @@ public:
 	UFUNCTION(BlueprintNativeEvent,Category="Action")
 	void StartAction(AActor* Instigator);
 
-	UFUNCTION(BlueprintNativeEvent,Category="Action")
+	UFUNCTION(BlueprintNativeEvent)
+	bool CanStart(AActor*intigator);
+	
+	UFUNCTION(BlueprintCallable,BlueprintNativeEvent,Category="Action")
 	void StopAction(AActor*instigator);
 
 	UWorld * GetWorld() const override;
+
+	UFUNCTION(BlueprintCallable,Category="Action")
+	bool IsRunning() const;
+
+protected:
+    //action本身的属性
+	UPROPERTY(EditDefaultsOnly,Category="Tags")
+	FGameplayTagContainer GrantsTags;
+    /* 和哪些tag互斥 */
+	UPROPERTY(EditDefaultsOnly,Category="Tags")
+	FGameplayTagContainer BlockTags;
+
+	bool bIsRunning;
+
+	UFUNCTION(BlueprintCallable,Category="Action")
+	ULActionComponent* GetOwingComponent() const;
 };

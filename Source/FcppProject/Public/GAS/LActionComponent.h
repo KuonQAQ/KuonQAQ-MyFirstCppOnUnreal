@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "LAction.h"
 #include "Components/ActorComponent.h"
 #include "LActionComponent.generated.h"
 
 
-class ULAction;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FCPPPROJECT_API ULActionComponent : public UActorComponent
@@ -28,8 +28,13 @@ public:
 	UFUNCTION(BlueprintCallable,Category="Action")
 	bool StopActionByName(AActor* instigator,FName ActionName);
 
+	
+	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<ULAction>> DefaultAction;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Tags")
+	FGameplayTagContainer ActiveGameplayTags;
 
 protected:
 	

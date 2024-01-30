@@ -5,6 +5,7 @@
 
 #include "AttributeComponent.h"
 #include "Components/AudioComponent.h"
+#include "GAS/LActionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Util/GameplayFunctionLibrary.h"
@@ -44,6 +45,15 @@ void AMagicProjectile::OnAtorOverlap(UPrimitiveComponent* OverlappedComponent, A
 {
 	if(OtherActor && OtherActor!= GetInstigator())
 	{
+
+		ULActionComponent* ActionComponent = Cast<ULActionComponent>(OtherActor->GetComponentByClass(ULActionComponent::StaticClass()));
+		if(ActionComponent&&ActionComponent->ActiveGameplayTags.HasTag(ParryTag))
+		{
+			ProjectileMovement->Velocity=-ProjectileMovement->Velocity;
+
+			SetInstigator(Cast<APawn>(OtherActor));
+			return;
+		}
 		//UAttributeComponent * AttributeComponent= Cast<UAttributeComponent>(OtherActor->GetComponentByClass(UAttributeComponent::StaticClass()));
 		UGameplayStatics::PlayWorldCameraShake(this,CameraShake,GetActorLocation(),100,4000);
 		

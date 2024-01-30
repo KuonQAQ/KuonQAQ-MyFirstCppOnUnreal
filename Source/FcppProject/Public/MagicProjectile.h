@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -41,7 +42,9 @@ protected:
 
 	UPROPERTY(EditAnywhere,Category="Damage")
 	float Damage;
-	
+
+	UPROPERTY(EditDefaultsOnly,Category="Tags")
+	FGameplayTag ParryTag;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
