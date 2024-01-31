@@ -60,6 +60,10 @@ void AMagicProjectile::OnAtorOverlap(UPrimitiveComponent* OverlappedComponent, A
 			if(UGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(),OtherActor,Damage,SweepResult))
 			{
 				//AttributeComponent->ApplyHealthChange(GetInstigator(),Damage);
+				if(ActionComponent)
+				{
+					ActionComponent->AddAction(GetInstigator(), EffectActionClass);
+				}
 				UGameplayStatics::PlaySoundAtLocation(this, ImpactSound->Sound, GetActorLocation(), GetActorRotation(), 1, 1, 0, nullptr, nullptr, nullptr); 
 				Destroy();
 			}

@@ -20,14 +20,16 @@ public:
 	ULActionComponent();
 
 	UFUNCTION(BlueprintCallable,Category="Action")
-	void AddAction(TSubclassOf<ULAction> ActionClass);
+	void AddAction(AActor* Instigator,TSubclassOf<ULAction> ActionClass);
 
 	UFUNCTION(BlueprintCallable,Category="Action")
 	bool StartActionByName(AActor* instigator,FName ActionName);
 
 	UFUNCTION(BlueprintCallable,Category="Action")
 	bool StopActionByName(AActor* instigator,FName ActionName);
-
+	
+	UFUNCTION(BlueprintCallable,Category="Action")
+	void RemoveAction(ULAction* ActionToRemove);
 	
 	
 	UPROPERTY(EditDefaultsOnly)

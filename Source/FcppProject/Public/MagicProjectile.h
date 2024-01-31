@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GAS/LAction.h"
 #include "MagicProjectile.generated.h"
 
 UCLASS()
@@ -42,6 +43,9 @@ protected:
 
 	UPROPERTY(EditAnywhere,Category="Damage")
 	float Damage;
+
+	UPROPERTY(EditDefaultsOnly,Category="Damage")
+	TSubclassOf<ULAction> EffectActionClass;
 
 	UPROPERTY(EditDefaultsOnly,Category="Tags")
 	FGameplayTag ParryTag;

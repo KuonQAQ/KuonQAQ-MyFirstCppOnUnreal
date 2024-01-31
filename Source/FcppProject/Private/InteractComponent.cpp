@@ -41,14 +41,33 @@ void UInteractComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+
+	FindBestInteractable();
 }
 
 void UInteractComponent::PrimaryInteract()
 {
+	if(!FocusActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No FocusActor to Interact."));
+		return;
+	}
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+	if(ensure(MyPawn))
+	{
+		IGameplayInterface::Execute_Interact(FocusActor, MyPawn);
+	}
+	
+}
+
+void UInteractComponent::FindBestInteractable()
+{
+	bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
+
 	FCollisionObjectQueryParams ObjectQueryParams;
 	FVector End;
 	//FHitResult Hit;
-	TArray<FHitResult> Hits;
+	FHitResult Hit;
 
 	float Radius = 30.0f;
 	
@@ -66,13 +85,12 @@ void UInteractComponent::PrimaryInteract()
 	
 	//GetWorld()->LineTraceSingleByObjectType(Hit,Eyelocation,End,ObjectQueryParams);
 	//bool HitBool=GetWorld()->LineTraceSingleByObjectType(Hit,Eyelocation,End,ObjectQueryParams);
-	bool HitBool = GetWorld()->SweepMultiByObjectType(Hits,Eyelocation,End,FQuat::Identity,ObjectQueryParams,Shape);
+	bool HitBool = GetWorld()->SweepSingleByObjectType(Hit,Eyelocation,End,FQuat::Identity,ObjectQueryParams,Shape);
 	
 	//GetWorld()->SweepMultiByObjectType(Hits,Eyelocation,End,FQuat::Identity,ObjectQueryParams,Shape);
-    FColor hitcolor = HitBool?FColor::Green:FColor::Red;
+	FColor hitcolor = HitBool?FColor::Green:FColor::Red;
 	
-	for(FHitResult Hit:Hits)
-	{
+	
 		AActor*HitActor=Hit.GetActor();
 
 		if(CVarDebugDrawInteraction.GetValueOnGameThread())
@@ -83,17 +101,50 @@ void UInteractComponent::PrimaryInteract()
 		{
 			if(HitActor->Implements<UGameplayInterface>())
 			{
-				APawn * MyPawn = Cast<APawn>(owner);
-				IGameplayInterface::Execute_Interact(HitActor,MyPawn);
+				FocusActor = HitActor;
+				if(bDebugDraw)
+				{
+					DrawDebugSphere(GetWorld(),Hit.ImpactPoint,Radius,32,hitcolor,false,2.0f);
+				}
+			}
+		}else
+		{
+			if(bDebugDraw)
+			{
 				DrawDebugSphere(GetWorld(),Hit.ImpactPoint,Radius,32,hitcolor,false,2.0f);
-				break;
 			}
 		}
 		
-	}
+	
 	if(CVarDebugDrawInteraction.GetValueOnGameThread())
 	{
 		DrawDebugLine(GetWorld(),Eyelocation,End,hitcolor,false,2.0f,0,2.0f);
 	}
+
+	//如果当前有聚焦ACTOR,就生成控件
+	if(FocusActor)
+	{
+		if(DefaultWidgetInstance == nullptr && ensure(DefaultWidgetClass))
+		{
+			DefaultWidgetInstance = CreateWidget<UWorldUserWidget>(GetWorld(), DefaultWidgetClass);
+		}
+
+		if(DefaultWidgetInstance)
+		{
+			DefaultWidgetInstance->AttachActor = FocusActor;
+			if(!DefaultWidgetInstance->IsInViewport())
+			{
+				DefaultWidgetInstance->AddToViewport();
+			}
+		}
+	}
+	else
+	{
+		if(DefaultWidgetInstance)
+		{
+			DefaultWidgetInstance->RemoveFromParent();
+		}
+	}
+
 	
 }

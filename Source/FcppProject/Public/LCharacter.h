@@ -28,6 +28,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
 
+	UPROPERTY(EditDefaultsOnly)
 	UInteractComponent* InteractComponent;
 	
     UPROPERTY(VisibleAnywhere)
